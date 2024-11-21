@@ -12,6 +12,12 @@ def update_b_label(event):
     b_label.config(text=name)
 
 
+def update_b2_label(event):
+    code = b2_combobox.get()
+    name = cur[code]
+    b2_label.config(text=name)
+
+
 def update_t_label(event):
     code = t_combobox.get()
     name = cur[code]
@@ -21,16 +27,24 @@ def update_t_label(event):
 def exchange():
     t_code = t_combobox.get()
     b_code = b_combobox.get()
-    if t_code and b_code:
+    b2_code = b2_combobox.get()
+
+    if t_code and b_code and b2_code:
         try:
             response = requests.get(f'https://open.er-api.com/v6/latest/{b_code}')
             response.raise_for_status()
+            response2 = requests.get(f'https://open.er-api.com/v6/latest/{b2_code}')
+            response2.raise_for_status()
             data = response.json()
-            if t_code in data['rates']:
+            data2 = response2.json()
+            if t_code in data['rates'] and t_code in data['rates']:
                 exchange_rate = data['rates'][t_code]
+                exchange_rate2 = data2['rates'][t_code]
                 t_name = cur[t_code]
                 b_name = cur[b_code]
-                mb.showinfo("Курс обмена", f"Курс: {exchange_rate:.2f} {t_name} за 1 {b_name}")
+                b2_name = cur[b2_code]
+                mb.showinfo("Курс обмена",
+                            f"Курс: {exchange_rate:.2f} {t_name} за 1 {b_name}\nКурс: {exchange_rate2:.2f} {t_name} за 1 {b2_name}")
             else:
                 mb.showerror("Ошибка!", f"Валюта {t_code} не найдена!")
         except Exception as e:
@@ -64,7 +78,7 @@ cur = {
 
 window = Tk()
 window.title("EXCHANGE")
-window.geometry("360x300")
+window.geometry("360x460")
 window.configure(background='white')
 window.configure(highlightbackground='white')
 
@@ -76,6 +90,15 @@ b_combobox.bind("<<ComboboxSelected>>", update_b_label)
 
 b_label = ttk.Label()
 b_label.pack(padx=10, pady=10)
+
+Label(text="Вторая базовая валюта").pack(padx=10, pady=10)
+
+b2_combobox = ttk.Combobox(values=list(cur.keys()))
+b2_combobox.pack(padx=10, pady=10)
+b2_combobox.bind("<<ComboboxSelected>>", update_b2_label)
+
+b2_label = ttk.Label()
+b2_label.pack(padx=10, pady=10)
 
 Label(text="Целевая валюта").pack(padx=10, pady=10)
 
